@@ -1,0 +1,983 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>FANTA ORANGE — Fresh & Sparkling</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Black+Han+Sans&family=Nunito:wght@400;700;900&family=Bebas+Neue&display=swap" rel="stylesheet"/>
+  <style>
+    :root {
+      --orange: #ff6600;
+      --orange-light: #ff8c00;
+      --orange-glow: #ffaa33;
+      --purple: #6b21a8;
+      --blue-fanta: #1a0a3b;
+      --dark: #0d0005;
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      background: #0a0a0a;
+      color: white;
+      font-family: 'Nunito', sans-serif;
+      overflow-x: hidden;
+      cursor: none;
+    }
+
+    /* ── CUSTOM CURSOR ── */
+    #cursor {
+      width: 18px; height: 18px;
+      background: radial-gradient(circle, #ff8c00, #ff6600);
+      border-radius: 50%;
+      position: fixed; top: 0; left: 0;
+      pointer-events: none; z-index: 99999;
+      transform: translate(-50%, -50%);
+      transition: transform 0.1s, width 0.2s, height 0.2s;
+      box-shadow: 0 0 18px #ff6600, 0 0 40px #ff660066;
+    }
+    #cursor-ring {
+      width: 40px; height: 40px;
+      border: 2px solid rgba(255,102,0,0.5);
+      border-radius: 50%;
+      position: fixed; top: 0; left: 0;
+      pointer-events: none; z-index: 99998;
+      transform: translate(-50%, -50%);
+      transition: transform 0.18s ease-out, width 0.2s, height 0.2s;
+    }
+    a:hover ~ #cursor, button:hover ~ #cursor { transform: translate(-50%,-50%) scale(2); }
+
+    /* ── LOADING SCREEN ── */
+    #loader {
+      position: fixed; inset: 0;
+      background: var(--orange);
+      z-index: 9999;
+      display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
+      overflow: hidden;
+    }
+    #loader .loader-text {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: clamp(4rem, 14vw, 10rem);
+      color: white;
+      letter-spacing: 0.1em;
+      text-shadow: 0 0 40px rgba(0,0,0,0.3);
+      animation: pulseText 0.8s ease-in-out infinite alternate;
+    }
+    #loader .loader-sub {
+      font-size: 1rem; letter-spacing: 0.4em;
+      color: rgba(255,255,255,0.8);
+      margin-top: -10px;
+      text-transform: uppercase;
+    }
+    .loader-bar-wrap {
+      width: 200px; height: 4px;
+      background: rgba(255,255,255,0.3);
+      border-radius: 10px; margin-top: 32px; overflow: hidden;
+    }
+    .loader-bar {
+      height: 100%; background: white;
+      border-radius: 10px; width: 0%;
+      animation: loadBar 1.8s ease-in-out forwards;
+    }
+    #loader-circles {
+      position: absolute; inset: 0; pointer-events: none;
+    }
+    .lc {
+      position: absolute; border-radius: 50%;
+      border: 2px solid rgba(255,255,255,0.15);
+      animation: expandCircle 2s ease-out infinite;
+    }
+    @keyframes expandCircle {
+      0%  { transform: scale(0.3); opacity: 0.8; }
+      100%{ transform: scale(2.5); opacity: 0; }
+    }
+    @keyframes pulseText {
+      from { text-shadow: 0 0 20px rgba(0,0,0,0.2); }
+      to   { text-shadow: 0 0 60px rgba(255,255,255,0.4); }
+    }
+    @keyframes loadBar { to { width: 100%; } }
+
+    /* ── FLOATING PARTICLES ── */
+    #particles-bg {
+      position: fixed; inset: 0; pointer-events: none; z-index: 0; overflow: hidden;
+    }
+    .particle {
+      position: absolute;
+      border-radius: 50%;
+      background: radial-gradient(circle, #ff660044, transparent);
+      animation: floatPart linear infinite;
+    }
+    @keyframes floatPart {
+      0%   { transform: translateY(100vh) rotate(0deg); opacity: 0; }
+      10%  { opacity: 1; }
+      90%  { opacity: 0.6; }
+      100% { transform: translateY(-10vh) rotate(360deg); opacity: 0; }
+    }
+
+    /* ── NAVBAR ── */
+    #navbar {
+      position: fixed; top: 0; left: 0; right: 0; z-index: 1000;
+      padding: 16px 40px;
+      display: flex; align-items: center; justify-content: space-between;
+      background: rgba(10,10,10,0.35);
+      backdrop-filter: blur(18px);
+      border-bottom: 1px solid rgba(255,102,0,0.15);
+      transition: all 0.3s;
+    }
+    .nav-logo {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 2rem; letter-spacing: 0.15em;
+      background: linear-gradient(135deg, #ff8c00, #ff6600, #ffcc00);
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+      text-shadow: none;
+    }
+    .nav-links { display: flex; gap: 32px; align-items: center; }
+    .nav-links a {
+      color: rgba(255,255,255,0.8); text-decoration: none;
+      font-weight: 700; font-size: 0.9rem; letter-spacing: 0.06em;
+      transition: color 0.2s;
+      position: relative;
+    }
+    .nav-links a::after {
+      content: ''; position: absolute; bottom: -4px; left: 0; right: 0;
+      height: 2px; background: var(--orange);
+      transform: scaleX(0); transition: transform 0.2s; transform-origin: left;
+    }
+    .nav-links a:hover { color: var(--orange-glow); }
+    .nav-links a:hover::after { transform: scaleX(1); }
+    .btn-buy {
+      background: linear-gradient(135deg, #ff6600, #ff8c00);
+      color: white; border: none; padding: 10px 28px;
+      border-radius: 999px; font-weight: 900;
+      font-size: 0.9rem; letter-spacing: 0.08em;
+      cursor: none; transition: all 0.25s;
+      box-shadow: 0 0 20px rgba(255,102,0,0.5);
+    }
+    .btn-buy:hover {
+      transform: scale(1.07);
+      box-shadow: 0 0 40px rgba(255,102,0,0.9);
+    }
+    @media(max-width:768px){
+      #navbar { padding: 14px 20px; }
+      .nav-links { gap: 16px; }
+      .nav-links a { font-size: 0.8rem; }
+    }
+
+    /* ── HERO ── */
+    #hero {
+      position: relative; min-height: 100vh;
+      display: flex; align-items: center; justify-content: center;
+      overflow: hidden; background: radial-gradient(ellipse at 50% 60%, #1a0500 0%, #0a0a0a 70%);
+    }
+    .hero-bg-text {
+      position: absolute; top: 50%; left: 50%;
+      transform: translate(-50%, -50%);
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: clamp(5rem, 22vw, 18rem);
+      color: rgba(255,102,0,0.06);
+      white-space: nowrap; letter-spacing: 0.05em;
+      pointer-events: none; user-select: none;
+      line-height: 1;
+    }
+    .hero-content {
+      position: relative; z-index: 2;
+      display: flex; flex-direction: column;
+      align-items: center; text-align: center;
+    }
+    .hero-tagline {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: clamp(1rem, 3vw, 1.5rem);
+      letter-spacing: 0.6em; color: var(--orange-glow);
+      margin-bottom: 8px; opacity: 0;
+    }
+    .hero-title {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: clamp(3.5rem, 10vw, 8rem);
+      line-height: 0.9;
+      background: linear-gradient(135deg, #ff8c00 0%, #ff6600 40%, #ffcc44 100%);
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+      text-shadow: none; opacity: 0;
+    }
+    .hero-title span { display: block; }
+    .hero-subtitle {
+      font-size: clamp(0.85rem, 2vw, 1.1rem);
+      color: rgba(255,255,255,0.6);
+      letter-spacing: 0.2em; margin-top: 12px;
+      opacity: 0;
+    }
+    /* Can group */
+    #can-group {
+      position: relative; width: clamp(200px, 40vw, 380px);
+      height: clamp(300px, 55vw, 520px); margin: 24px 0;
+    }
+    #can-img {
+      position: absolute; top: 50%; left: 50%;
+      transform: translate(-50%, -50%);
+      width: 55%; filter: drop-shadow(0 0 60px #ff6600cc);
+      z-index: 3;
+    }
+    .glow-ring {
+      position: absolute; top: 50%; left: 50%;
+      transform: translate(-50%, -50%);
+      width: 65%; padding-bottom: 65%;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(255,102,0,0.35) 0%, transparent 65%);
+      pointer-events: none; z-index: 1;
+      animation: glowPulse 2.5s ease-in-out infinite;
+    }
+    @keyframes glowPulse {
+      0%,100% { transform: translate(-50%,-50%) scale(1); opacity: 0.7; }
+      50%      { transform: translate(-50%,-50%) scale(1.2); opacity: 1; }
+    }
+    .orbit-item {
+      position: absolute; width: 60px; height: 60px;
+      border-radius: 50%; pointer-events: none;
+      filter: drop-shadow(0 0 12px rgba(255,140,0,0.8));
+      z-index: 2;
+    }
+    /* Decorative orbs */
+    .orb {
+      position: absolute; border-radius: 50%;
+      filter: blur(60px); pointer-events: none;
+    }
+    .hero-cta {
+      display: flex; gap: 16px; flex-wrap: wrap; justify-content: center;
+      margin-top: 20px; opacity: 0;
+    }
+    .btn-primary {
+      background: linear-gradient(135deg, #ff6600, #ff8c00);
+      color: white; padding: 14px 40px;
+      border-radius: 999px; font-weight: 900;
+      font-size: 1rem; letter-spacing: 0.08em;
+      cursor: none; border: none;
+      box-shadow: 0 0 30px rgba(255,102,0,0.6);
+      transition: all 0.25s;
+    }
+    .btn-primary:hover { transform: scale(1.08); box-shadow: 0 0 60px rgba(255,102,0,1); }
+    .btn-outline {
+      background: transparent;
+      border: 2px solid rgba(255,102,0,0.6);
+      color: var(--orange-glow); padding: 14px 40px;
+      border-radius: 999px; font-weight: 900;
+      font-size: 1rem; letter-spacing: 0.08em;
+      cursor: none; transition: all 0.25s;
+    }
+    .btn-outline:hover {
+      background: rgba(255,102,0,0.1);
+      border-color: var(--orange-glow);
+      box-shadow: 0 0 30px rgba(255,102,0,0.3);
+    }
+    .scroll-hint {
+      position: absolute; bottom: 32px; left: 50%;
+      transform: translateX(-50%);
+      display: flex; flex-direction: column; align-items: center;
+      gap: 8px; color: rgba(255,255,255,0.4);
+      font-size: 0.75rem; letter-spacing: 0.2em;
+    }
+    .scroll-arrow {
+      width: 20px; height: 30px; border: 2px solid rgba(255,102,0,0.4);
+      border-radius: 10px; position: relative;
+    }
+    .scroll-arrow::after {
+      content: ''; position: absolute; top: 6px; left: 50%;
+      transform: translateX(-50%);
+      width: 4px; height: 4px; background: var(--orange);
+      border-radius: 50%;
+      animation: scrollDot 1.5s ease-in-out infinite;
+    }
+    @keyframes scrollDot {
+      0%,100% { transform: translateX(-50%) translateY(0); opacity: 1; }
+      100%     { transform: translateX(-50%) translateY(10px); opacity: 0; }
+    }
+
+    /* ── ABOUT SECTION ── */
+    #about {
+      position: relative; padding: 120px 0;
+      background: linear-gradient(180deg, #0a0a0a 0%, #0d0208 50%, #0a0a0a 100%);
+      overflow: hidden;
+    }
+    .about-inner {
+      max-width: 1200px; margin: 0 auto;
+      padding: 0 40px;
+      display: grid; grid-template-columns: 1fr 1fr; gap: 80px;
+      align-items: center;
+    }
+    @media(max-width:768px){
+      .about-inner { grid-template-columns: 1fr; gap: 48px; }
+    }
+    #about-can-wrap {
+      position: relative; display: flex;
+      align-items: center; justify-content: center;
+      height: 400px;
+    }
+    #about-can {
+      width: 200px;
+      filter: drop-shadow(0 0 50px rgba(255,102,0,0.7));
+    }
+    #about-orange-1, #about-orange-2 {
+      position: absolute; width: 80px;
+      filter: drop-shadow(0 0 10px rgba(255,140,0,0.6));
+    }
+    #about-orange-1 { top: 15%; left: 5%; }
+    #about-orange-2 { bottom: 20%; right: 5%; }
+    .about-text-col {}
+    .about-label {
+      font-size: 0.8rem; letter-spacing: 0.5em;
+      color: var(--orange); text-transform: uppercase;
+      margin-bottom: 16px; opacity: 0;
+    }
+    .about-heading {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: clamp(2.5rem, 5vw, 4rem);
+      line-height: 1; margin-bottom: 24px;
+      background: linear-gradient(135deg, white 0%, #ffcc66 100%);
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+      opacity: 0;
+    }
+    .about-body {
+      color: rgba(255,255,255,0.65);
+      line-height: 1.9; font-size: 1.05rem;
+      margin-bottom: 40px; opacity: 0;
+    }
+    .about-body strong { color: var(--orange-glow); }
+    .info-cards {
+      display: grid; grid-template-columns: 1fr 1fr; gap: 16px;
+    }
+    .info-card {
+      background: rgba(255,102,0,0.07);
+      border: 1px solid rgba(255,102,0,0.2);
+      border-radius: 16px; padding: 20px;
+      transition: all 0.3s; opacity: 0;
+      backdrop-filter: blur(8px);
+    }
+    .info-card:hover {
+      background: rgba(255,102,0,0.15);
+      border-color: rgba(255,102,0,0.5);
+      transform: translateY(-4px);
+      box-shadow: 0 8px 30px rgba(255,102,0,0.2);
+    }
+    .info-card-icon { font-size: 1.8rem; margin-bottom: 8px; }
+    .info-card-title {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 1.2rem; color: var(--orange-glow);
+      letter-spacing: 0.05em;
+    }
+    .info-card-sub {
+      font-size: 0.78rem; color: rgba(255,255,255,0.45);
+      margin-top: 4px;
+    }
+
+    /* ── FLAVOR SECTION ── */
+    #flavor {
+      position: relative; min-height: 100vh;
+      display: flex; align-items: center; justify-content: center;
+      overflow: hidden;
+    }
+    #flavor-bg {
+      position: absolute; inset: 0;
+      background: linear-gradient(180deg, #0a0a0a 0%, #1a0500 40%, #0d0010 100%);
+      z-index: 0;
+    }
+    .flavor-inner {
+      position: relative; z-index: 2;
+      max-width: 1100px; margin: 0 auto;
+      padding: 100px 40px;
+      text-align: center;
+    }
+    .flavor-label {
+      font-size: 0.8rem; letter-spacing: 0.5em;
+      color: var(--orange); text-transform: uppercase;
+      margin-bottom: 16px;
+    }
+    .flavor-big-text {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: clamp(3rem, 10vw, 8rem);
+      line-height: 0.9;
+      background: linear-gradient(135deg, #ff8c00, #ff6600, #ffcc44);
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+    }
+    .flavor-big-text span { display: block; }
+    #crate-wrapper {
+      position: relative; width: 320px; height: 260px;
+      margin: 50px auto;
+    }
+    #flavor-can {
+      position: absolute; top: -80px; left: 50%;
+      transform: translateX(-50%);
+      width: 120px;
+      filter: drop-shadow(0 0 40px rgba(255,102,0,0.9));
+      z-index: 5;
+    }
+    .crate {
+      position: absolute; bottom: 0; left: 50%;
+      transform: translateX(-50%);
+      width: 280px; height: 180px;
+      border-radius: 16px;
+      background: linear-gradient(135deg, #1a0800, #2d1000);
+      border: 2px solid rgba(255,102,0,0.3);
+      box-shadow: 0 20px 60px rgba(255,102,0,0.2), inset 0 1px 0 rgba(255,140,0,0.2);
+      display: flex; align-items: center; justify-content: center;
+      overflow: hidden;
+    }
+    .crate::before {
+      content: ''; position: absolute;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background: repeating-linear-gradient(
+        90deg,
+        rgba(255,102,0,0.06) 0px, rgba(255,102,0,0.06) 2px,
+        transparent 2px, transparent 40px
+      ),
+      repeating-linear-gradient(
+        0deg,
+        rgba(255,102,0,0.06) 0px, rgba(255,102,0,0.06) 2px,
+        transparent 2px, transparent 40px
+      );
+    }
+    .crate-label {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 1.5rem; letter-spacing: 0.2em;
+      color: rgba(255,102,0,0.5);
+    }
+    /* Floating orange particles in flavor */
+    .flavor-particle {
+      position: absolute; pointer-events: none;
+      animation: orbitFloat linear infinite;
+    }
+    @keyframes orbitFloat {
+      0%   { transform: rotate(0deg) translateX(var(--r)) rotate(0deg); }
+      100% { transform: rotate(360deg) translateX(var(--r)) rotate(-360deg); }
+    }
+    .flavor-desc {
+      font-size: 1.1rem; color: rgba(255,255,255,0.6);
+      max-width: 560px; margin: 0 auto;
+      line-height: 1.8;
+    }
+
+    /* ── SECTION DIVIDERS ── */
+    .section-divider {
+      width: 60px; height: 3px;
+      background: linear-gradient(90deg, var(--orange), transparent);
+      margin: 24px auto;
+      border-radius: 10px;
+    }
+
+    /* ── FOOTER ── */
+    footer {
+      background: #060606;
+      border-top: 1px solid rgba(255,102,0,0.1);
+      padding: 60px 40px 40px;
+      text-align: center;
+    }
+    .footer-logo {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 3rem; letter-spacing: 0.2em;
+      background: linear-gradient(135deg, #ff8c00, #ff6600, #ffcc00);
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+      margin-bottom: 8px;
+    }
+    .footer-tagline {
+      color: rgba(255,255,255,0.4);
+      font-size: 0.85rem; letter-spacing: 0.3em;
+      text-transform: uppercase; margin-bottom: 32px;
+    }
+    .footer-links {
+      display: flex; gap: 32px; justify-content: center;
+      flex-wrap: wrap; margin-bottom: 40px;
+    }
+    .footer-links a {
+      color: rgba(255,255,255,0.4); text-decoration: none;
+      font-size: 0.85rem; letter-spacing: 0.1em;
+      transition: color 0.2s;
+    }
+    .footer-links a:hover { color: var(--orange-glow); }
+    .footer-bottom {
+      font-size: 0.78rem; color: rgba(255,255,255,0.2);
+      letter-spacing: 0.15em;
+    }
+    .footer-bottom span { color: var(--orange); }
+    .social-row {
+      display: flex; gap: 16px; justify-content: center;
+      margin-bottom: 32px;
+    }
+    .social-btn {
+      width: 44px; height: 44px; border-radius: 50%;
+      border: 1px solid rgba(255,102,0,0.3);
+      display: flex; align-items: center; justify-content: center;
+      color: rgba(255,255,255,0.5); font-size: 1rem;
+      cursor: none; transition: all 0.2s;
+      text-decoration: none;
+    }
+    .social-btn:hover {
+      border-color: var(--orange);
+      background: rgba(255,102,0,0.15);
+      color: var(--orange-glow);
+      transform: translateY(-3px);
+    }
+
+    /* ── NOISE OVERLAY ── */
+    body::before {
+      content: '';
+      position: fixed; inset: 0;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");
+      opacity: 0.04; pointer-events: none; z-index: 50000;
+    }
+  </style>
+</head>
+<body>
+
+<!-- LOADING SCREEN -->
+<div id="loader">
+  <div id="loader-circles">
+    <div class="lc" style="width:200px;height:200px;top:50%;left:50%;margin:-100px 0 0 -100px;animation-delay:0s"></div>
+    <div class="lc" style="width:300px;height:300px;top:50%;left:50%;margin:-150px 0 0 -150px;animation-delay:0.3s"></div>
+    <div class="lc" style="width:400px;height:400px;top:50%;left:50%;margin:-200px 0 0 -200px;animation-delay:0.6s"></div>
+  </div>
+  <div class="loader-text">FANTA</div>
+  <div class="loader-sub">Loading Fresh Experience…</div>
+  <div class="loader-bar-wrap"><div class="loader-bar"></div></div>
+</div>
+
+<!-- CURSOR -->
+<div id="cursor"></div>
+<div id="cursor-ring"></div>
+
+<!-- FLOATING PARTICLES -->
+<div id="particles-bg"></div>
+
+<!-- NAVBAR -->
+<nav id="navbar">
+  <div class="nav-logo">FANTA</div>
+  <div class="nav-links">
+    <a href="#hero">Home</a>
+    <a href="#about">Product</a>
+    <a href="#flavor">Flavor</a>
+    <a href="#contact">Contact</a>
+    <button class="btn-buy">Buy Now</button>
+  </div>
+</nav>
+
+<!-- HERO -->
+<section id="hero">
+  <!-- Decorative orbs -->
+  <div class="orb" style="width:500px;height:500px;background:#ff660022;top:10%;right:-10%;"></div>
+  <div class="orb" style="width:300px;height:300px;background:#6b21a822;bottom:10%;left:-5%;"></div>
+
+  <div class="hero-bg-text">FANTA</div>
+
+  <div class="hero-content">
+    <div class="hero-tagline">— Est. 1940 —</div>
+    <div class="hero-title">
+      <span>FRESH</span>
+      <span>ORANGE</span>
+    </div>
+
+    <!-- CAN GROUP -->
+    <div id="can-group">
+      <div class="glow-ring"></div>
+
+      <!-- Orbit items: orange emoji as img placeholders -->
+      <img class="orbit-item" id="orb1"
+        src="https://em-content.zobj.net/source/apple/354/tangerine_1f34a.png"
+        alt="orange"
+        style="top:8%;left:12%;" />
+      <img class="orbit-item" id="orb2"
+        src="https://em-content.zobj.net/source/apple/354/tangerine_1f34a.png"
+        alt="orange"
+        style="top:10%;right:8%;width:45px;" />
+      <img class="orbit-item" id="orb3"
+        src="https://em-content.zobj.net/source/apple/354/tangerine_1f34a.png"
+        alt="orange"
+        style="bottom:12%;left:6%;width:50px;" />
+      <img class="orbit-item" id="orb4"
+        src="https://em-content.zobj.net/source/apple/354/tangerine_1f34a.png"
+        alt="orange"
+        style="bottom:15%;right:10%;width:38px;" />
+
+      <!-- Main can image -->
+      <img id="can-img"
+        src="https://www.pngall.com/wp-content/uploads/2016/04/Fanta-PNG-Clipart.png"
+        alt="Fanta Orange Can" />
+    </div>
+
+    <div class="hero-subtitle">THE ORIGINAL SPARKLING ORANGE DRINK</div>
+    <div class="hero-cta">
+      <button class="btn-primary">Explore Flavors</button>
+      <button class="btn-outline">Watch Story</button>
+    </div>
+  </div>
+
+  <div class="scroll-hint">
+    <div class="scroll-arrow"></div>
+    <span>SCROLL</span>
+  </div>
+</section>
+
+<!-- ABOUT -->
+<section id="about">
+  <div class="about-inner">
+    <!-- Left: Can -->
+    <div id="about-can-wrap">
+      <img id="about-orange-1"
+        src="https://em-content.zobj.net/source/apple/354/tangerine_1f34a.png"
+        alt="orange" />
+      <img id="about-can"
+        src="https://www.pngall.com/wp-content/uploads/2016/04/Fanta-PNG-Clipart.png"
+        alt="Fanta Can" />
+      <img id="about-orange-2"
+        src="https://em-content.zobj.net/source/apple/354/tangerine_1f34a.png"
+        alt="orange" />
+    </div>
+
+    <!-- Right: Text -->
+    <div class="about-text-col">
+      <div class="about-label">About Fanta</div>
+      <h2 class="about-heading">Born To Be<br/>Bold &amp; Fresh</h2>
+      <p class="about-body">
+        <strong>Fanta</strong> adalah minuman soda rasa buah yang terkenal dengan rasa segar, warna cerah, dan sensasi sparkling yang menyenangkan. <strong>Fanta Orange</strong> menghadirkan rasa jeruk yang manis, fresh, dan penuh energi — menjadikannya pilihan terbaik untuk momen kegembiraan kamu setiap hari.
+      </p>
+      <div class="info-cards">
+        <div class="info-card">
+          <div class="info-card-icon">🍊</div>
+          <div class="info-card-title">Fresh Taste</div>
+          <div class="info-card-sub">100% sensasi segar setiap tegukan</div>
+        </div>
+        <div class="info-card">
+          <div class="info-card-icon">🌟</div>
+          <div class="info-card-title">Orange Flavor</div>
+          <div class="info-card-sub">Rasa jeruk asli yang kaya dan manis</div>
+        </div>
+        <div class="info-card">
+          <div class="info-card-icon">✨</div>
+          <div class="info-card-title">Sparkling Soda</div>
+          <div class="info-card-sub">Gelembung sempurna yang menggugah</div>
+        </div>
+        <div class="info-card">
+          <div class="info-card-icon">📅</div>
+          <div class="info-card-title">Since 1940</div>
+          <div class="info-card-sub">Lebih dari 80 tahun kelezatan global</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- FLAVOR -->
+<section id="flavor">
+  <div id="flavor-bg"></div>
+
+  <!-- Orbiting particles -->
+  <div id="flavor-orbits" style="position:absolute;inset:0;pointer-events:none;z-index:1;display:flex;align-items:center;justify-content:center;">
+    <!-- Generated by JS -->
+  </div>
+
+  <div class="flavor-inner">
+    <div class="flavor-label">Signature Collection</div>
+    <div class="flavor-big-text">
+      <span id="flv1">EXPLOSION</span>
+      <span id="flv2">OF FLAVOR</span>
+    </div>
+
+    <div class="section-divider"></div>
+
+    <div id="crate-wrapper">
+      <img id="flavor-can"
+        src="https://www.pngall.com/wp-content/uploads/2016/04/Fanta-PNG-Clipart.png"
+        alt="Fanta Can" />
+      <div class="crate">
+        <span class="crate-label">FANTA × ORANGE</span>
+      </div>
+    </div>
+
+    <p class="flavor-desc">
+      Setiap tegukan Fanta Orange adalah petualangan rasa — perpaduan sempurna antara manis segar, sparkle yang menggigit, dan aroma jeruk yang memanjakan jiwa.
+    </p>
+  </div>
+</section>
+
+<!-- CONTACT ANCHOR -->
+<div id="contact" style="height:1px;"></div>
+
+<!-- FOOTER -->
+<footer>
+  <div class="footer-logo">FANTA</div>
+  <div class="footer-tagline">The Original Sparkling Orange Experience</div>
+
+  <div class="social-row">
+    <a class="social-btn" href="#">ig</a>
+    <a class="social-btn" href="#">tw</a>
+    <a class="social-btn" href="#">yt</a>
+    <a class="social-btn" href="#">tt</a>
+  </div>
+
+  <div class="footer-links">
+    <a href="#">Privacy Policy</a>
+    <a href="#">Terms of Use</a>
+    <a href="#">Contact Us</a>
+    <a href="#">Careers</a>
+  </div>
+
+  <div class="footer-bottom">
+    Made with <span>Orange Energy</span> &mdash; &copy; 2025 Fanta. All rights reserved.
+  </div>
+</footer>
+
+<script>
+// ════════════════════════════════════════════
+//  CURSOR
+// ════════════════════════════════════════════
+const cursor = document.getElementById('cursor');
+const cursorRing = document.getElementById('cursor-ring');
+let mx = 0, my = 0, rx = 0, ry = 0;
+
+document.addEventListener('mousemove', e => {
+  mx = e.clientX; my = e.clientY;
+  gsap.set(cursor, { x: mx, y: my });
+});
+function animRing() {
+  rx += (mx - rx) * 0.12;
+  ry += (my - ry) * 0.12;
+  gsap.set(cursorRing, { x: rx, y: ry });
+  requestAnimationFrame(animRing);
+}
+animRing();
+
+document.querySelectorAll('a, button').forEach(el => {
+  el.addEventListener('mouseenter', () => {
+    gsap.to(cursor, { scale: 1.8, duration: 0.2 });
+    gsap.to(cursorRing, { scale: 1.5, duration: 0.2, opacity: 0.4 });
+  });
+  el.addEventListener('mouseleave', () => {
+    gsap.to(cursor, { scale: 1, duration: 0.2 });
+    gsap.to(cursorRing, { scale: 1, duration: 0.2, opacity: 1 });
+  });
+});
+
+// ════════════════════════════════════════════
+//  LOADING SCREEN
+// ════════════════════════════════════════════
+window.addEventListener('load', () => {
+  gsap.to('#loader', {
+    opacity: 0,
+    duration: 0.6,
+    delay: 2,
+    ease: 'power2.inOut',
+    onComplete: () => {
+      document.getElementById('loader').style.display = 'none';
+      initAnimations();
+    }
+  });
+});
+
+// ════════════════════════════════════════════
+//  PARTICLES BG
+// ════════════════════════════════════════════
+const pBg = document.getElementById('particles-bg');
+for (let i = 0; i < 22; i++) {
+  const p = document.createElement('div');
+  p.className = 'particle';
+  const size = Math.random() * 80 + 20;
+  p.style.cssText = `
+    width:${size}px;height:${size}px;
+    left:${Math.random()*100}%;
+    animation-duration:${Math.random()*18+10}s;
+    animation-delay:${Math.random()*12}s;
+    opacity:${Math.random()*0.4+0.05};
+  `;
+  pBg.appendChild(p);
+}
+
+// ════════════════════════════════════════════
+//  FLAVOR ORBIT PARTICLES
+// ════════════════════════════════════════════
+const flvOrbit = document.getElementById('flavor-orbits');
+const emojis = ['🍊','🍋','🌿','✨','⭐'];
+for (let i = 0; i < 14; i++) {
+  const span = document.createElement('div');
+  span.className = 'flavor-particle';
+  const r = 120 + Math.random() * 180;
+  const dur = 8 + Math.random() * 12;
+  const delay = Math.random() * -dur;
+  span.style.cssText = `
+    --r:${r}px;
+    font-size:${Math.random()*18+12}px;
+    animation-duration:${dur}s;
+    animation-delay:${delay}s;
+    opacity:${Math.random()*0.6+0.2};
+  `;
+  span.textContent = emojis[Math.floor(Math.random()*emojis.length)];
+  flvOrbit.appendChild(span);
+}
+
+// ════════════════════════════════════════════
+//  GSAP ANIMATIONS
+// ════════════════════════════════════════════
+function initAnimations() {
+  gsap.registerPlugin(ScrollTrigger);
+
+  // --- HERO entrance ---
+  const heroTl = gsap.timeline({ defaults: { ease: 'power3.out' }});
+  heroTl
+    .to('.hero-tagline', { opacity: 1, y: 0, duration: 0.7, delay: 0.1 })
+    .to('.hero-title',   { opacity: 1, y: 0, duration: 0.8 }, '-=0.4')
+    .to('#can-group',    { opacity: 1, scale: 1, duration: 0.9 }, '-=0.5')
+    .to('.hero-subtitle',{ opacity: 1, duration: 0.6 }, '-=0.4')
+    .to('.hero-cta',     { opacity: 1, y: 0, duration: 0.6 }, '-=0.3');
+
+  gsap.set('.hero-tagline', { y: 20 });
+  gsap.set('.hero-title', { y: 40 });
+  gsap.set('#can-group', { opacity: 0, scale: 0.8 });
+  gsap.set('.hero-subtitle', { opacity: 0 });
+  gsap.set('.hero-cta', { opacity: 0, y: 20 });
+
+  // --- FLOATING can ---
+  gsap.to('#can-img', {
+    y: -22, duration: 2.2,
+    ease: 'sine.inOut', yoyo: true, repeat: -1
+  });
+
+  // --- ORBIT items ---
+  const orbs = ['#orb1','#orb2','#orb3','#orb4'];
+  const orbitRs = [90, 110, 95, 105];
+  orbs.forEach((sel, i) => {
+    const baseAngle = (i / orbs.length) * 360;
+    gsap.to(sel, {
+      motionPath: {
+        path: `M0,0`,
+      },
+      duration: 5 + i * 0.5,
+      ease: 'sine.inOut',
+      yoyo: true,
+      repeat: -1,
+    });
+    // Simple float
+    gsap.to(sel, {
+      y: `${-15 + Math.random()*30}`,
+      x: `${-10 + Math.random()*20}`,
+      duration: 2.5 + i * 0.4,
+      ease: 'sine.inOut',
+      yoyo: true, repeat: -1,
+      delay: i * 0.3
+    });
+  });
+
+  // --- ABOUT section: can rotate + parallax ---
+  gsap.fromTo('#about-can', 
+    { rotation: -15, x: -60 },
+    {
+      rotation: 15, x: 0,
+      scrollTrigger: {
+        trigger: '#about',
+        start: 'top 80%', end: 'bottom 20%',
+        scrub: 1.5,
+      }
+    }
+  );
+
+  gsap.fromTo('#about-orange-1',
+    { x: 0, y: 0, rotation: 0 },
+    {
+      x: -60, y: -80, rotation: -40,
+      scrollTrigger: {
+        trigger: '#about', start: 'top 80%', end: 'bottom 20%', scrub: 2
+      }
+    }
+  );
+  gsap.fromTo('#about-orange-2',
+    { x: 0, y: 0, rotation: 0 },
+    {
+      x: 70, y: 60, rotation: 50,
+      scrollTrigger: {
+        trigger: '#about', start: 'top 80%', end: 'bottom 20%', scrub: 2
+      }
+    }
+  );
+
+  // Text fade up stagger
+  gsap.to('.about-label', {
+    opacity: 1, y: 0, duration: 0.7,
+    scrollTrigger: { trigger: '#about', start: 'top 75%' }
+  });
+  gsap.set('.about-label', { y: 20 });
+
+  gsap.to('.about-heading', {
+    opacity: 1, y: 0, duration: 0.8, delay: 0.1,
+    scrollTrigger: { trigger: '#about', start: 'top 70%' }
+  });
+  gsap.set('.about-heading', { y: 30 });
+
+  gsap.to('.about-body', {
+    opacity: 1, y: 0, duration: 0.8, delay: 0.2,
+    scrollTrigger: { trigger: '#about', start: 'top 68%' }
+  });
+  gsap.set('.about-body', { y: 20 });
+
+  gsap.utils.toArray('.info-card').forEach((card, i) => {
+    gsap.set(card, { y: 30 });
+    gsap.to(card, {
+      opacity: 1, y: 0, duration: 0.6, delay: i * 0.12,
+      scrollTrigger: { trigger: '#about', start: 'top 60%' }
+    });
+  });
+
+  // --- FLAVOR section ---
+  gsap.fromTo('#flv1',
+    { opacity: 0, x: -80 },
+    {
+      opacity: 1, x: 0, duration: 0.9,
+      scrollTrigger: { trigger: '#flavor', start: 'top 75%' }
+    }
+  );
+  gsap.fromTo('#flv2',
+    { opacity: 0, x: 80 },
+    {
+      opacity: 1, x: 0, duration: 0.9, delay: 0.15,
+      scrollTrigger: { trigger: '#flavor', start: 'top 75%' }
+    }
+  );
+
+  // Can drops into crate
+  gsap.fromTo('#flavor-can',
+    { y: -120, scale: 1.4, opacity: 0 },
+    {
+      y: 0, scale: 1, opacity: 1, duration: 1.2, ease: 'bounce.out',
+      scrollTrigger: { trigger: '#flavor', start: 'top 60%' }
+    }
+  );
+
+  // BG darken
+  gsap.fromTo('#flavor-bg',
+    { opacity: 0.4 },
+    {
+      opacity: 1,
+      scrollTrigger: {
+        trigger: '#flavor', start: 'top 80%', end: 'center center', scrub: 1
+      }
+    }
+  );
+
+  // --- HERO BG text parallax ---
+  gsap.to('.hero-bg-text', {
+    y: 80,
+    scrollTrigger: {
+      trigger: '#hero', start: 'top top', end: 'bottom top', scrub: 1
+    }
+  });
+
+  // --- Footer fade ---
+  gsap.fromTo('footer',
+    { opacity: 0, y: 30 },
+    {
+      opacity: 1, y: 0, duration: 0.8,
+      scrollTrigger: { trigger: 'footer', start: 'top 90%' }
+    }
+  );
+}
+</script>
+</body>
+</html>
